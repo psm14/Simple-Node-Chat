@@ -1,0 +1,15 @@
+div#nicknamebox
+  div.container
+    form( method="post", action="/nickname/new"  )
+        div#nickname
+          div.label
+            | Blah What is your nickname?
+          input( type="text", name="nickname", class="setNickname" )
+          input( type="submit", value="Chat!", class="nicknameButton" )
+div#chatbox
+  div.container
+    div#messages
+    div#newmessage
+      form( method="post", action="/chat/new" )
+        input( type="text", name="message", class="enterMessage" )
+        input( type="submit", value="Send", class="sendButton", id="btnSend" )
