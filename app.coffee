@@ -54,12 +54,7 @@ sendMessage = (author, message) ->
 
 registerWaiter = (res, id) ->
     recvQueue.push () ->
-        sendResponse res, JSON.stringify( messagesSinceId(id) )
-
-#Helpers
-sendResponse = (res, msg) ->
-    res.writeHead 200, 'Content-type': 'text/plain'
-    res.end msg
+        res.json messagesSinceId(id)
 
 #Routes
 app.get '/', (req, res) ->
@@ -71,17 +66,15 @@ app.get '/chat/:id?', (req, res, next) ->
     if !id? || !(id >= 0) then next()
     else
         newMessages = messagesSinceId(id)
-        if newMessages.length > 0
-            sendResponse res, JSON.stringify( newMessages )
-        else
-            registerWaiter res, id
+        if newMessages.length > 0 then res.json newMessages
+        else registerWaiter res, id
 
 app.get '/chat/new', (req, res) ->
     registerWaiter res, messageIndex-1
 
 app.post '/chat/new', (req, res) ->
     sendMessage  req.param('author'), req.param('message')
-    sendResponse res, JSON.stringify( {result:'success'} )
+    res.json {result:'success'}
 
 #Server start
 app.listen (process.env.PORT || 3000)
