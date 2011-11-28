@@ -11,13 +11,6 @@ app.configure () ->
     app.use require('stylus').middleware( src: "#{__dirname}/public" )
     app.use app.router
     app.use express.static( "#{__dirname}/public")
-
-app.configure 'development', () ->
-    app.use express.errorHandler
-        dumpExceptions: true
-        showStack: true
-
-app.configure 'production', () ->
     app.use express.errorHandler
 
 #State
@@ -33,11 +26,7 @@ messages     = []
 #Called with no arguments, put everything needed in a closure
 recvQueue = []
 
-messagesSinceId = (id) ->
-    ret = []
-    for m in messages
-        ret.push m if m['id'] > id
-    return ret
+messagesSinceId = (id) -> m for m in messages when m.id > id
 
 sendMessage = (author, message) ->
     messages.push
@@ -45,12 +34,10 @@ sendMessage = (author, message) ->
         author:  author
         message: message
 
-    while messages.length > 10
-        messages.shift()
-    
-    while recvQueue.length > 0
-        f = recvQueue.shift()
-        f()
+    messages.shift() while messages.length > 10
+
+    # Shift-n-call
+    recvQueue.shift()() while recvQueue.length > 0
 
 registerWaiter = (res, id) ->
     recvQueue.push () ->
@@ -77,5 +64,5 @@ app.post '/chat/new', (req, res) ->
     res.json {result:'success'}
 
 #Server start
-app.listen (process.env.PORT || 3000)
+app.listen(process.env.PORT || 3000)
 console.log "Server started on port #{app.address().port} in #{app.settings.env} mode"
